@@ -27,7 +27,7 @@ void scrollMouse(int dx, int dy) {
  * LCTRL + RSHIFT + A will quit the program and stop it from running
  * @return 1 will block the input, 0 will not block the input
  */
- int handleInput() {
+ int HandleInput() {
         if (keyState[VK_LCONTROL] && keyState[VK_RSHIFT] && keyState[VK_A]) {
             PostQuitMessage(0); // Post a quit message to break out of the message loop
             return 1;
@@ -55,7 +55,6 @@ void scrollMouse(int dx, int dy) {
             }
             if(keyState[13] && !prevState[13]){
                 //send a mouse left down
-                // std::cout << "Mouse left click" << std::endl;
                 INPUT input = { 0 };
                 input.type = INPUT_MOUSE;
                 input.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
@@ -64,7 +63,6 @@ void scrollMouse(int dx, int dy) {
             }
             if(!keyState[13] && prevState[13]){
                 //send a mouse left up
-                // std::cout << "Mouse left click" << std::endl;
                 INPUT input = { 0 };
                 input.type = INPUT_MOUSE;
                 input.mi.dwFlags = MOUSEEVENTF_LEFTUP;
@@ -103,30 +101,14 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
             keyState[pKeyBoard->vkCode] = false;
             // std::cout << "Key released: " << pKeyBoard->vkCode << std::endl;
         }
-        if(handleInput()){
+        if(HandleInput()){
             return 1;
         }
     }
-   
-     // if (nCode == HC_ACTION && wParam == WM_KEYDOWN) {
-    //     KBDLLHOOKSTRUCT *pKeyBoard = (KBDLLHOOKSTRUCT *)lParam;
-
-    //     // Check if 'A' key is pressed
-    //     if (pKeyBoard->vkCode == 0x41) { // 0x41 is the virtual key code for 'A'
-    //         // Simulate 'B' key press instead
-    //         INPUT input = { 0 };
-    //         input.type = INPUT_KEYBOARD;
-    //         input.ki.wVk = 0x42; // Virtual key code for 'B'
-    //         SendInput(1, &input, sizeof(INPUT));
-
-    //         // Block the original 'A' key press
-    //         return 1;
-    //     }
-    // }
     return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
 
-int startHook() {
+int StartHook() {
     // Install the keyboard hook
     HHOOK hHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, NULL, 0);
     std::cout << "Hook installed!" << std::endl;
@@ -148,5 +130,5 @@ int startHook() {
 }
 
 int main() {
-    return startHook();
+    return StartHook();
 }
