@@ -3,13 +3,24 @@
 #include <iostream>
 
 std::map<int, bool> keyState;
-const int VK_A = 0x41;
-
+std::map<int, bool> prevState;
+const int VK_A = 65;
+const int VK_I = 73;
+const int VK_K = 74;
+const int VK_J = 75;
+const int VK_L = 76;
 
 void moveMouse(int dx, int dy) {
     POINT cursorPos;
     GetCursorPos(&cursorPos);
     SetCursorPos(cursorPos.x + dx, cursorPos.y + dy);
+}
+void scrollMouse(int dx, int dy) {
+    INPUT input = { 0 };
+    input.type = INPUT_MOUSE;
+    input.mi.dwFlags = MOUSEEVENTF_WHEEL;
+    input.mi.mouseData = dy;
+    SendInput(1, &input, sizeof(INPUT));
 }
 /**
  * Handle input
@@ -17,34 +28,62 @@ void moveMouse(int dx, int dy) {
  * @return 1 will block the input, 0 will not block the input
  */
  int handleInput() {
-        if (keyState[VK_LCONTROL] && keyState[VK_RSHIFT] && keyState[0x41]) {
+        if (keyState[VK_LCONTROL] && keyState[VK_RSHIFT] && keyState[VK_A]) {
             PostQuitMessage(0); // Post a quit message to break out of the message loop
             return 1;
         }
+        int modifier = 2;
+        int speed=10;
          if (keyState[VK_LCONTROL]) {
-            if(keyState[73] || keyState[74] || keyState[75] || keyState[76]) {
-                if(keyState[73]) {
-                    moveMouse(0, -20); // Move mouse up
+            if(keyState[VK_I] || keyState[VK_K] || keyState[VK_J] || keyState[VK_L]) {
+                if(keyState[VK_LSHIFT]) {
+                    modifier = 1;
                 }
-                if(keyState[74]) {
-                    moveMouse(-20, 0); // Move mouse down
+                if(keyState[VK_I]) {
+                    moveMouse(0, 0 - (speed * modifier)); // Move mouse up
                 }
-                if(keyState[75]) {
-                    moveMouse(0, 20); // Move mouse left
+                if(keyState[VK_K]) {
+                    moveMouse(0 - (speed * modifier), 0); // Move mouse down
                 }
-                if(keyState[76]) { 
-                    moveMouse(20, 0); // Move mouse right
+                if(keyState[VK_J]) {
+                    moveMouse(0, speed * modifier); // Move mouse left
+                }
+                if(keyState[VK_L]) { 
+                    moveMouse(speed * modifier, 0); // Move mouse right
                 }
                 return 1;
             }
-            if(keyState[13]){
-                //send a mouse left click
-                std::cout << "Mouse left click" << std::endl;
+            if(keyState[13] && !prevState[13]){
+                //send a mouse left down
+                // std::cout << "Mouse left click" << std::endl;
                 INPUT input = { 0 };
                 input.type = INPUT_MOUSE;
                 input.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
                 SendInput(1, &input, sizeof(INPUT));
-                 input.mi.dwFlags = MOUSEEVENTF_LEFTUP;
+                return 1;
+            }
+            if(!keyState[13] && prevState[13]){
+                //send a mouse left up
+                // std::cout << "Mouse left click" << std::endl;
+                INPUT input = { 0 };
+                input.type = INPUT_MOUSE;
+                input.mi.dwFlags = MOUSEEVENTF_LEFTUP;
+                SendInput(1, &input, sizeof(INPUT));
+                return 1;
+            }
+            if(keyState[VK_SPACE]){
+                //send a mouse right down
+                INPUT input = { 0 };
+                input.type = INPUT_MOUSE;
+                 input.mi.dwFlags = MOUSEEVENTF_RIGHTDOWN;
+                SendInput(1, &input, sizeof(INPUT));
+                return 1;
+            }
+            if(!keyState[VK_SPACE] && prevState[VK_SPACE]){
+                //send a mouse right up
+                INPUT input = { 0 };
+                input.type = INPUT_MOUSE;
+                input.mi.dwFlags = MOUSEEVENTF_RIGHTUP;
                 SendInput(1, &input, sizeof(INPUT));
                 return 1;
             }
@@ -56,15 +95,15 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
 
     if (nCode == HC_ACTION) {
         KBDLLHOOKSTRUCT *pKeyBoard = (KBDLLHOOKSTRUCT *)lParam;
+        prevState = keyState;
         if (wParam == WM_KEYDOWN) {
             keyState[pKeyBoard->vkCode] = true;
-            std::cout << "Key pressed: " << pKeyBoard->vkCode << std::endl;
+            // std::cout << "Key pressed: " << pKeyBoard->vkCode << std::endl;
         } else if (wParam == WM_KEYUP) {
             keyState[pKeyBoard->vkCode] = false;
-            std::cout << "Key released: " << pKeyBoard->vkCode << std::endl;
+            // std::cout << "Key released: " << pKeyBoard->vkCode << std::endl;
         }
         if(handleInput()){
-            Sleep(10);
             return 1;
         }
     }
@@ -84,7 +123,6 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
     //         return 1;
     //     }
     // }
-    Sleep(100);
     return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
 
