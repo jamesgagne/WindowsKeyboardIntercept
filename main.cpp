@@ -136,6 +136,7 @@ int StartHook() {
 
     // Uninstall the hook
     UnhookWindowsHookEx(hHook);
+    std::cout << "Hook uninstalled at "<< std::time(0)  << std::endl;
     return 0;
 }
 
