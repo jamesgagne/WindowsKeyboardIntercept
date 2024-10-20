@@ -1,6 +1,7 @@
 #include <Windows.h>
 #include <map>
 #include <iostream>
+#include <ctime>
 
 const int VK_A = 65;
 const int VK_I = 73;
@@ -120,9 +121,9 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
 int StartHook() {
     // Install the keyboard hook
     HHOOK hHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, NULL, 0);
-    std::cout << "Hook installed!" << std::endl;
+    std::cout << "Hook installed at "<< std::time(0)  << std::endl;
     if (hHook == NULL) {
-        std::cerr << "Failed to install hook!" << std::endl;
+        std::cerr << "Failed to install hook! " << std::time(0) << std::endl;
         return 1;
     }
 
